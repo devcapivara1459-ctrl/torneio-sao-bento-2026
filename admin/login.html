@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Entrar | Administração do Torneio</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 75% 20%,rgba(139,20,36,.25),transparent 24rem),linear-gradient(135deg,#151012,#25191c);font-family:Inter,Arial;color:#282124}
+.card{width:min(430px,92vw);background:#fff;border-radius:20px;padding:34px;box-shadow:0 30px 90px rgba(0,0,0,.28)}.mark{width:48px;height:48px;background:#8b1424;color:#fff;border-radius:13px;display:grid;place-items:center;font-weight:900;margin-bottom:25px}
+.eyebrow{font-size:9px;color:#8b1424;font-weight:900;letter-spacing:.14em}.card h1{font:800 42px/.95 "Barlow Condensed";text-transform:uppercase;margin:7px 0 10px}.card p{font-size:11px;color:#7d7274;line-height:1.6}
+label{display:block;font-size:8px;font-weight:900;color:#72686a;margin:20px 0 6px}.password{width:100%;border:1px solid #ded5d1;border-radius:10px;padding:13px;outline:none}.password:focus{border-color:#b6727e;box-shadow:0 0 0 4px rgba(139,20,36,.07)}
+button{width:100%;margin-top:13px;border:0;background:#8b1424;color:#fff;border-radius:10px;padding:13px;font-weight:900;font-size:10px;text-transform:uppercase;cursor:pointer}.error{min-height:18px;margin-top:10px;font-size:9px;color:#ad1d31}.back{display:block;margin-top:18px;text-align:center;text-decoration:none;color:#827779;font-size:9px}
+</style></head>
+<body><main class="card"><div class="mark">SB</div><span class="eyebrow">ÁREA RESTRITA</span><h1>Administração</h1><p>Acesso exclusivo da organização do Torneio da Juventude de São Bento 2026.</p>
+<form id="login-form"><label for="password">SENHA DO ADMINISTRADOR</label><input class="password" id="password" type="password" autocomplete="current-password" autofocus><button type="submit">Entrar no painel</button><div class="error" id="error"></div></form>
+<a class="back" href="../index.html">← Voltar ao site do torneio</a></main>
+<script>
+if(sessionStorage.getItem('sb_admin_password')) location.href='./';
+document.querySelector('#login-form').addEventListener('submit',async e=>{
+e.preventDefault();const password=document.querySelector('#password').value,error=document.querySelector('#error');error.textContent='Verificando...';
+try{const r=await fetch('/api/admin?action=login',{method:'POST',headers:{'x-admin-password':password}});if(!r.ok){error.textContent='Senha inválida.';return}sessionStorage.setItem('sb_admin_password',password);location.href='./'}catch(err){error.textContent='Não foi possível conectar à API.'}
+});
+</script></body></html>

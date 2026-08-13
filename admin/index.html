@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#171214">
+  <title>Administração | Torneio da Juventude de São Bento 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+<div class="admin-app">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand">
+      <span class="brand-mark">SB</span>
+      <div><strong>Torneio da Juventude</strong><small>Administração • 2026</small></div>
+    </div>
+
+    <div class="nav-label">Organização</div>
+    <nav class="side-nav">
+      <button class="nav-item active" data-page="dashboard"><span>⌂</span><b>Dashboard</b></button>
+      <button class="nav-item" data-page="participantes"><span>👥</span><b>Participantes</b></button>
+      <button class="nav-item" data-page="modalidades"><span>🏅</span><b>Modalidades</b></button>
+      <button class="nav-item" data-page="chaveamento"><span>⌘</span><b>Chaveamento</b></button>
+      <button class="nav-item" data-page="partidas"><span>▶</span><b>Partidas</b><i id="live-badge" class="nav-badge hidden">0</i></button>
+      <button class="nav-item" data-page="classificacao"><span>🏆</span><b>Classificação</b></button>
+    </nav>
+
+    <div class="nav-label">Sistema</div>
+    <nav class="side-nav">
+      <button class="nav-item" data-page="configuracoes"><span>⚙</span><b>Configurações</b></button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="admin-chip"><span class="avatar">A</span><div><strong>Administrador</strong><small>Acesso da organização</small></div></div>
+      <button class="back-site admin-logout" id="logout-admin">Sair do painel</button><a class="back-site" href="../index.html">← Voltar ao site</a>
+    </div>
+  </aside>
+
+  <div class="main-shell">
+    <header class="topbar">
+      <button id="menu-toggle" class="icon-btn mobile-only">☰</button>
+      <div>
+        <span class="crumb">TORNEIO DA JUVENTUDE • SÃO BENTO</span>
+        <h1 id="page-title">Dashboard</h1>
+      </div>
+      <div class="top-actions">
+        <span id="save-indicator" class="save-indicator">● Dados locais</span>
+        <button class="icon-btn" id="quick-next" title="Ir para partidas">▶</button>
+      </div>
+    </header>
+
+    <main class="content">
+
+      <section class="page active" id="page-dashboard">
+        <div class="welcome-card">
+          <div>
+            <span class="eyebrow">CENTRAL DA ORGANIZAÇÃO</span>
+            <h2>Controle o torneio sem depender de horário fixo.</h2>
+            <p>Use a fila de partidas para marcar o que está aguardando, qual jogo vem a seguir e o que está em andamento.</p>
+          </div>
+          <div class="event-badge"><span>12</span><small>SET<br>2026</small></div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card"><span class="stat-icon">👥</span><div><small>Representações</small><strong id="stat-participants">0</strong><em>cadastradas</em></div></article>
+          <article class="stat-card"><span class="stat-icon">🏅</span><div><small>Modalidades</small><strong id="stat-sports">10</strong><em>ativas</em></div></article>
+          <article class="stat-card"><span class="stat-icon live-dot">●</span><div><small>Em andamento</small><strong id="stat-live">0</strong><em>partidas</em></div></article>
+          <article class="stat-card"><span class="stat-icon">✓</span><div><small>Encerradas</small><strong id="stat-finished">0</strong><em>partidas</em></div></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-head"><div><span class="eyebrow">FILA DE JOGOS</span><h3>Operação agora</h3></div><button class="text-btn" data-go="partidas">Ver todas →</button></div>
+            <div id="dashboard-queue" class="queue-list"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-head"><div><span class="eyebrow">PROGRESSO</span><h3>Modalidades</h3></div></div>
+            <div id="dashboard-sports" class="progress-list"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="page" id="page-participantes">
+        <div class="page-head">
+          <div><span class="eyebrow">CADASTRO</span><h2>Participantes e comunidades</h2><p>Cadastre as representações que poderão entrar nas modalidades.</p></div>
+          <button class="primary-btn" id="new-participant">+ Nova representação</button>
+        </div>
+        <div class="toolbar-card">
+          <input id="participant-search" class="search-input" placeholder="Buscar nome ou comunidade...">
+          <select id="participant-filter"><option value="">Todas as modalidades</option></select>
+          <span class="result-count" id="participant-result-count">0 registros</span>
+        </div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>Nome / equipe</th><th>Comunidade</th><th>Modalidade</th><th>Tipo</th><th></th></tr></thead>
+            <tbody id="participants-table"></tbody>
+          </table>
+          <div id="participants-empty" class="table-empty">Nenhuma representação cadastrada.</div>
+        </div>
+      </section>
+
+      <section class="page" id="page-modalidades">
+        <div class="page-head">
+          <div><span class="eyebrow">CONFIGURAÇÃO</span><h2>Modalidades</h2><p>Visão geral e situação de cada disputa.</p></div>
+        </div>
+        <div id="sports-admin-grid" class="sports-admin-grid"></div>
+      </section>
+
+      <section class="page" id="page-chaveamento">
+        <div class="page-head compact">
+          <div><span class="eyebrow">ELIMINATÓRIA</span><h2>Chaveamento</h2><p>Gere a chave, registre vencedores e avance as fases automaticamente.</p></div>
+        </div>
+        <div class="sub-toolbar">
+          <select id="bracket-sport"></select>
+          <button class="secondary-btn" id="bracket-add-from-registrations">Usar cadastrados</button>
+          <button class="primary-btn" id="bracket-generate">Gerar / refazer chave</button>
+        </div>
+        <div class="bracket-summary" id="bracket-summary"></div>
+        <div id="admin-bracket-area"></div>
+      </section>
+
+      <section class="page" id="page-partidas">
+        <div class="page-head">
+          <div><span class="eyebrow">OPERAÇÃO DO DIA</span><h2>Partidas</h2><p>Sem horário rígido. Controle por ordem e status.</p></div>
+          <button class="primary-btn" id="new-match">+ Criar partida</button>
+        </div>
+        <div class="status-filters" id="match-filters">
+          <button class="active" data-status="">Todas</button>
+          <button data-status="proximo">Próximo</button>
+          <button data-status="andamento">Em andamento</button>
+          <button data-status="aguardando">Aguardando</button>
+          <button data-status="encerrado">Encerrado</button>
+          <button data-status="wo">W.O.</button>
+        </div>
+        <div id="matches-list" class="matches-list"></div>
+      </section>
+
+      <section class="page" id="page-classificacao">
+        <div class="page-head">
+          <div><span class="eyebrow">PONTUAÇÃO GERAL</span><h2>Classificação das comunidades</h2><p>1º = 10 pontos • 2º = 7 • 3º = 5 • participação = 1 ponto.</p></div>
+          <button class="secondary-btn" id="add-score">+ Registrar colocação</button>
+        </div>
+        <div class="podium" id="podium"></div>
+        <div class="table-card">
+          <table>
+            <thead><tr><th>#</th><th>Comunidade</th><th>Pontos</th><th>1º</th><th>2º</th><th>3º</th><th>Participações</th></tr></thead>
+            <tbody id="classification-table"></tbody>
+          </table>
+          <div id="classification-empty" class="table-empty">Ainda não há pontuação registrada.</div>
+        </div>
+      </section>
+
+      <section class="page" id="page-configuracoes">
+        <div class="page-head"><div><span class="eyebrow">SISTEMA</span><h2>Configurações</h2><p>Ações administrativas e manutenção dos dados deste navegador.</p></div></div>
+        <div class="settings-grid">
+          <div class="settings-card"><h3>Dados do torneio</h3><p>Exporta todos os cadastros, partidas, chaves e pontuação para um arquivo JSON.</p><button class="secondary-btn" id="export-data">Exportar dados</button></div>
+          <div class="settings-card"><h3>Importar backup</h3><p>Restaura um arquivo JSON exportado anteriormente.</p><label class="secondary-btn file-btn">Selecionar arquivo<input type="file" id="import-data" accept=".json"></label></div>
+          <div class="settings-card danger-card"><h3>Limpar sistema</h3><p>Apaga os dados administrativos salvos neste navegador.</p><button class="danger-btn" id="clear-data">Limpar todos os dados</button></div>
+        </div>
+        <div class="notice-card">
+          <strong>Importante para a próxima fase</strong>
+          <p>Esta versão salva no navegador com <code>localStorage</code>. Para usar o mesmo painel em vários celulares/computadores e publicar resultados em tempo real, depois conectaremos a um banco de dados.</p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-backdrop" data-close-modal></div>
+  <div class="modal-dialog">
+    <button class="modal-close" data-close-modal>×</button>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<script src="admin.js"></script>
+</body>
+</html>

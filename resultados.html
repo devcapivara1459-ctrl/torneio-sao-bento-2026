@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta name="theme-color" content="#171214">
+<title>Jogos e Resultados | Torneio da Juventude de São Bento 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="resultados.css">
+</head>
+<body>
+<header class="public-topbar">
+  <a class="brand" href="index.html"><span class="mark">SB</span><span><strong>Torneio da Juventude</strong><small>São Bento • 2026</small></span></a>
+  <nav>
+    <a href="index.html">Início</a>
+    <a href="index.html#modalidades">Modalidades</a>
+    <a href="index.html#inscricoes">Inscrições</a>
+    <a class="active" href="resultados.html">Jogos e Resultados</a>
+    <a href="index.html#regulamento">Regulamento</a>
+  </nav>
+</header>
+
+<main>
+<section class="hero">
+  <div>
+    <span class="eyebrow">ACOMPANHE O TORNEIO</span>
+    <h1>Jogos, resultados<br>e <em>chaveamentos</em>.</h1>
+    <p>Esta área é somente para acompanhamento. Os dados são atualizados pela organização.</p>
+  </div>
+  <div class="live-card"><span class="dot"></span><div><small>STATUS DO TORNEIO</small><strong id="live-text">Carregando...</strong></div></div>
+</section>
+
+<section class="section live-section">
+  <div class="section-head"><div><span class="eyebrow">AGORA</span><h2>Partidas em destaque</h2></div></div>
+  <div id="highlight-games" class="highlight-grid"></div>
+</section>
+
+<section class="section">
+  <div class="section-head">
+    <div><span class="eyebrow">POR MODALIDADE</span><h2>Chaveamento</h2></div>
+    <select id="sport-select"></select>
+  </div>
+  <div id="bracket-public"></div>
+</section>
+
+<section class="section soft">
+  <div class="section-head"><div><span class="eyebrow">CLASSIFICAÇÃO</span><h2>Ranking geral</h2></div></div>
+  <div id="public-ranking" class="ranking"></div>
+</section>
+</main>
+
+<footer><strong>Torneio da Juventude de São Bento 2026</strong><span>Área pública de acompanhamento</span></footer>
+<script src="resultados.js"></script>
+</body>
+</html>
