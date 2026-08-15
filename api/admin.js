@@ -25,18 +25,44 @@ export default async function handler(req,res){
     if(!auth(req)) return send(res,401,{error:'Não autorizado.'});
 
     if(req.method==='GET' && action==='state'){
-      const [modalidades,participantes,partidas,chaveamentos,resultados]=await Promise.all([
+      const [modalidades,participantes,partidas,chaveamentos,resultados,inscricoes]=await Promise.all([
         sql`SELECT id,nome,icone,descricao,tipo,ativa FROM modalidades WHERE ativa=true ORDER BY nome`,
         sql`SELECT id,nome,comunidade,modalidade_id,tipo FROM participantes ORDER BY created_at`,
         sql`SELECT id,modalidade_id,fase,ordem,participante_a,participante_b,comunidade_a,comunidade_b,placar_a,placar_b,status,vencedor,bracket_match_id FROM partidas ORDER BY ordem,created_at`,
         sql`SELECT modalidade_id,dados FROM chaveamentos`,
-        sql`SELECT id,modalidade_id,comunidade,colocacao,pontos FROM resultados_modalidades ORDER BY created_at`
+        sql`SELECT id,modalidade_id,comunidade,colocacao,pontos FROM resultados_modalidades ORDER BY created_at`,
+        sql`SELECT i.id,i.origem_id,i.data_inscricao,i.comunidade,i.modalidade_raw,i.modalidade_id,i.responsavel_contato,i.jogadores_raw,i.regulamento_aceito,i.contribuicao_ciente,i.status,i.possivel_duplicidade,i.duplicada_de,i.observacao_admin,i.created_at,m.nome AS modalidade_nome FROM inscricoes i LEFT JOIN modalidades m ON m.id=i.modalidade_id ORDER BY i.created_at DESC`
       ]);
-      return send(res,200,{modalidades,participantes,partidas,chaveamentos,resultados});
+      return send(res,200,{modalidades,participantes,partidas,chaveamentos,resultados,inscricoes});
     }
 
     if(req.method!=='POST') return send(res,405,{error:'Método não permitido.'});
     const b=body(req);
+
+    if(action==='registration-approve'){
+      const id=String(b.id||'');
+      const found=await sql`SELECT * FROM inscricoes WHERE id=${id}::uuid LIMIT 1`;
+      if(!found.length) return send(res,404,{error:'Inscrição não encontrada.'});
+      const i=found[0], modalidadeId=b.modalidade_id||i.modalidade_id, nome=String(b.nome||i.jogadores_raw||'').trim(), tipo=b.tipo||'equipe';
+      if(!modalidadeId||!nome) return send(res,400,{error:'Confirme modalidade e nome antes de aprovar.'});
+      let participanteId=i.participante_id;
+      if(!participanteId){
+        const p=await sql`INSERT INTO participantes(nome,comunidade,modalidade_id,tipo) VALUES(${nome},${i.comunidade},${modalidadeId},${tipo}) RETURNING id`;
+        participanteId=p[0].id;
+      }
+      await sql`UPDATE inscricoes SET status='aprovada',possivel_duplicidade=false,modalidade_id=${modalidadeId},participante_id=${participanteId}::uuid,observacao_admin=${b.observacao||null},aprovada_at=now(),rejeitada_at=null,updated_at=now() WHERE id=${id}::uuid`;
+      return send(res,200,{ok:true,participante_id:participanteId});
+    }
+
+    if(action==='registration-reject'){
+      await sql`UPDATE inscricoes SET status='rejeitada',observacao_admin=${b.observacao||null},rejeitada_at=now(),updated_at=now() WHERE id=${b.id}::uuid`;
+      return send(res,200,{ok:true});
+    }
+
+    if(action==='registration-pending'){
+      await sql`UPDATE inscricoes SET status='pendente',possivel_duplicidade=false,duplicada_de=null,observacao_admin=${b.observacao||null},updated_at=now() WHERE id=${b.id}::uuid`;
+      return send(res,200,{ok:true});
+    }
 
     if(action==='participant-save'){
       if(!b.nome||!b.comunidade||!b.modalidade_id||!b.tipo) return send(res,400,{error:'Dados obrigatórios ausentes.'});
