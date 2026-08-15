@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/admin/admin.css">
+  <link rel="stylesheet" href="./admin/admin.css">
 </head>
 <body>
 <div class="admin-app">
@@ -21,6 +21,7 @@
     <div class="nav-label">Organização</div>
     <nav class="side-nav">
       <button class="nav-item active" data-page="dashboard"><span>⌂</span><b>Dashboard</b></button>
+      <button class="nav-item" data-page="inscricoes"><span>📥</span><b>Inscrições</b><i id="registration-badge" class="nav-badge hidden">0</i></button>
       <button class="nav-item" data-page="participantes"><span>👥</span><b>Participantes</b></button>
       <button class="nav-item" data-page="modalidades"><span>🏅</span><b>Modalidades</b></button>
       <button class="nav-item" data-page="chaveamento"><span>⌘</span><b>Chaveamento</b></button>
@@ -81,6 +82,26 @@
             <div id="dashboard-sports" class="progress-list"></div>
           </section>
         </div>
+      </section>
+
+
+      <section class="page" id="page-inscricoes">
+        <div class="page-head">
+          <div><span class="eyebrow">GOOGLE FORMS</span><h2>Inscrições recebidas</h2><p>Confira cada envio antes de transformá-lo em participante oficial.</p></div>
+          <button class="secondary-btn" id="refresh-registrations">↻ Atualizar</button>
+        </div>
+        <div class="registration-stats">
+          <article><small>Pendentes</small><strong id="reg-pending">0</strong></article>
+          <article><small>Aprovadas</small><strong id="reg-approved">0</strong></article>
+          <article><small>Possíveis duplicadas</small><strong id="reg-duplicates">0</strong></article>
+          <article><small>Rejeitadas</small><strong id="reg-rejected">0</strong></article>
+        </div>
+        <div class="toolbar-card">
+          <input id="registration-search" class="search-input" placeholder="Buscar comunidade, responsável ou jogador...">
+          <select id="registration-status"><option value="">Todos os status</option><option value="pendente">Pendentes</option><option value="duplicada">Duplicadas</option><option value="aprovada">Aprovadas</option><option value="rejeitada">Rejeitadas</option></select>
+          <span class="result-count" id="registration-count">0 inscrições</span>
+        </div>
+        <div id="registrations-list" class="registrations-list"></div>
       </section>
 
       <section class="page" id="page-participantes">
@@ -179,6 +200,6 @@
 </div>
 
 <div class="toast" id="toast"></div>
-<script src="/admin/admin.js"></script>
+<script src="./admin/admin.js"></script>
 </body>
 </html>
