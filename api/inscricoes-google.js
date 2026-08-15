@@ -5,13 +5,20 @@ const sql = neon(process.env.DATABASE_URL);
 function send(res, status, data) {
   res
     .status(status)
-    .setHeader('Content-Type', 'application/json; charset=utf-8');
+    .setHeader(
+      'Content-Type',
+      'application/json; charset=utf-8'
+    );
 
-  res.end(JSON.stringify(data));
+  res.end(
+    JSON.stringify(data)
+  );
 }
 
 function body(req) {
-  if (!req.body) return {};
+  if (!req.body) {
+    return {};
+  }
 
   if (typeof req.body === 'object') {
     return req.body;
@@ -47,7 +54,7 @@ function yes(v = '') {
 export default async function handler(req, res) {
 
   // ==========================================================
-  // PERMITIR APENAS POST
+  // PERMITIR SOMENTE POST
   // ==========================================================
 
   if (req.method !== 'POST') {
@@ -58,25 +65,33 @@ export default async function handler(req, res) {
 
 
   // ==========================================================
-  // VERIFICAR CHAVE GOOGLE FORMS
+  // LER CORPO DA REQUISIÇÃO
+  // ==========================================================
+
+  const b = body(req);
+
+
+  // ==========================================================
+  // VERIFICAR CHAVE DA INTEGRAÇÃO
   // ==========================================================
 
   const recebido =
-    req.headers['x-google-forms-secret'] || '';
+    String(
+      b.secret || ''
+    ).trim();
 
   const configurado =
-    process.env.GOOGLE_FORMS_SECRET || '';
+    String(
+      process.env.GOOGLE_FORMS_SECRET || ''
+    ).trim();
 
-
-  // ==========================================================
-  // DIAGNÓSTICO TEMPORÁRIO
-  // ==========================================================
 
   if (recebido !== configurado) {
 
     return send(res, 401, {
 
-      error: 'Integração não autorizada.',
+      error:
+        'Integração não autorizada.',
 
       diagnostico: {
 
@@ -86,10 +101,10 @@ export default async function handler(req, res) {
         tamanhoVercel:
           configurado.length,
 
-        headerChegou:
+        secretChegou:
           recebido.length > 0,
 
-        tamanhoHeader:
+        tamanhoRecebido:
           recebido.length
       }
     });
@@ -102,20 +117,24 @@ export default async function handler(req, res) {
 
   try {
 
-    const b = body(req);
-
     const comunidade =
-      String(b.comunidade || '').trim();
+      String(
+        b.comunidade || ''
+      ).trim();
 
     const modalidadeRaw =
-      String(b.modalidade || '').trim();
+      String(
+        b.modalidade || ''
+      ).trim();
 
     const jogadores =
-      String(b.jogadores || '').trim();
+      String(
+        b.jogadores || ''
+      ).trim();
 
 
     // ========================================================
-    // VALIDAR DADOS OBRIGATÓRIOS
+    // CAMPOS OBRIGATÓRIOS
     // ========================================================
 
     if (
@@ -126,13 +145,29 @@ export default async function handler(req, res) {
     ) {
 
       return send(res, 400, {
-        error: 'Inscrição incompleta.'
+
+        error:
+          'Inscrição incompleta.',
+
+        campos: {
+          origem_id:
+            Boolean(b.origem_id),
+
+          comunidade:
+            Boolean(comunidade),
+
+          modalidade:
+            Boolean(modalidadeRaw),
+
+          jogadores:
+            Boolean(jogadores)
+        }
       });
     }
 
 
     // ========================================================
-    // BUSCAR MODALIDADES
+    // BUSCAR MODALIDADES NO NEON
     // ========================================================
 
     const mods = await sql`
@@ -144,59 +179,99 @@ export default async function handler(req, res) {
     `;
 
 
+    // ========================================================
+    // TENTAR IDENTIFICAR MODALIDADE
+    // ========================================================
+
     const wanted =
-      norm(modalidadeRaw);
+      norm(
+        modalidadeRaw
+      );
 
 
     const modalidade =
-      mods.find(m =>
+      mods.find(m => {
 
-        wanted.includes(
-          norm(m.nome)
-        )
+        const nome =
+          norm(
+            m.nome
+          );
 
-        ||
+        return (
+          wanted.includes(nome) ||
+          nome.includes(wanted)
+        );
 
-        norm(m.nome).includes(
-          wanted
-        )
-
-      ) || null;
+      }) || null;
 
 
     // ========================================================
-    // VERIFICAR POSSÍVEL DUPLICIDADE
+    // PROCURAR POSSÍVEL INSCRIÇÃO DUPLICADA
     // ========================================================
 
     const dup = await sql`
 
-      SELECT id
+      SELECT
+        id
 
       FROM inscricoes
 
       WHERE
-        lower(trim(comunidade))
-          = lower(trim(${comunidade}))
+
+        lower(
+          trim(comunidade)
+        )
+        =
+        lower(
+          trim(${comunidade})
+        )
 
       AND
-        lower(trim(modalidade_raw))
-          = lower(trim(${modalidadeRaw}))
+
+        lower(
+          trim(modalidade_raw)
+        )
+        =
+        lower(
+          trim(${modalidadeRaw})
+        )
 
       AND
-        lower(trim(jogadores_raw))
-          = lower(trim(${jogadores}))
+
+        lower(
+          trim(jogadores_raw)
+        )
+        =
+        lower(
+          trim(${jogadores})
+        )
 
       AND
+
         status <> 'rejeitada'
 
-      ORDER BY created_at DESC
+      ORDER BY
+        created_at DESC
 
       LIMIT 1
     `;
 
 
     // ========================================================
-    // SALVAR INSCRIÇÃO
+    // DEFINIR STATUS
+    // ========================================================
+
+    const possuiDuplicidade =
+      dup.length > 0;
+
+    const status =
+      possuiDuplicidade
+        ? 'duplicada'
+        : 'pendente';
+
+
+    // ========================================================
+    // SALVAR NO NEON
     // ========================================================
 
     const rows = await sql`
@@ -205,6 +280,7 @@ export default async function handler(req, res) {
 
         origem,
         origem_id,
+
         data_inscricao,
 
         comunidade,
@@ -222,6 +298,7 @@ export default async function handler(req, res) {
         status,
 
         possivel_duplicidade,
+
         duplicada_de,
 
         dados_originais
@@ -232,38 +309,55 @@ export default async function handler(req, res) {
 
         'google_forms',
 
-        ${String(b.origem_id)},
+        ${String(
+          b.origem_id
+        )},
 
-        ${b.data_inscricao || null},
+        ${
+          b.data_inscricao ||
+          null
+        },
 
         ${comunidade},
 
         ${modalidadeRaw},
 
-        ${modalidade?.id || null},
+        ${
+          modalidade?.id ||
+          null
+        },
 
         ${
           String(
             b.responsavel || ''
-          ).trim() || null
+          ).trim()
+          ||
+          null
         },
 
         ${jogadores},
 
-        ${yes(b.regulamento)},
-
-        ${yes(b.contribuicao)},
-
         ${
-          dup.length
-            ? 'duplicada'
-            : 'pendente'
+          yes(
+            b.regulamento
+          )
         },
 
-        ${dup.length > 0},
+        ${
+          yes(
+            b.contribuicao
+          )
+        },
+
+        ${status},
 
         ${
-          dup[0]?.id || null
+          possuiDuplicidade
+        },
+
+        ${
+          dup[0]?.id ||
+          null
         }::uuid,
 
         ${
@@ -281,6 +375,30 @@ export default async function handler(req, res) {
 
       DO UPDATE SET
 
+        data_inscricao =
+          excluded.data_inscricao,
+
+        comunidade =
+          excluded.comunidade,
+
+        modalidade_raw =
+          excluded.modalidade_raw,
+
+        modalidade_id =
+          excluded.modalidade_id,
+
+        responsavel_contato =
+          excluded.responsavel_contato,
+
+        jogadores_raw =
+          excluded.jogadores_raw,
+
+        regulamento_aceito =
+          excluded.regulamento_aceito,
+
+        contribuicao_ciente =
+          excluded.contribuicao_ciente,
+
         dados_originais =
           excluded.dados_originais,
 
@@ -290,19 +408,27 @@ export default async function handler(req, res) {
       RETURNING
 
         id,
+
         status,
+
         possivel_duplicidade,
+
         modalidade_id
     `;
 
 
     // ========================================================
-    // SUCESSO
+    // RESPOSTA DE SUCESSO
     // ========================================================
 
     return send(res, 201, {
 
       ok: true,
+
+      message:
+        possuiDuplicidade
+          ? 'Inscrição recebida e marcada como possível duplicidade.'
+          : 'Inscrição recebida com sucesso.',
 
       inscricao:
         rows[0]
@@ -320,7 +446,8 @@ export default async function handler(req, res) {
 
       detail:
         String(
-          error?.message || error
+          error?.message ||
+          error
         )
     });
   }
